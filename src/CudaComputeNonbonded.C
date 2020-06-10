@@ -1017,6 +1017,8 @@ void CudaComputeNonbonded::launchWork() {
     }
     plcutoff2 = plcutoff * plcutoff;
 
+    if(savePairlists || !usePairlists) reSortDone = false; // Ensures pairlist resorting if doPairlist
+
     // if (atomsChanged)
     //   CkPrintf("plcutoff = %f  listTolerance = %f  save = %d  use = %d\n",
     //     plcutoff, pairlistTolerance, savePairlists, usePairlists);
@@ -1454,7 +1456,7 @@ void CudaComputeNonbonded::forceDoneCheck(void *arg, double walltime) {
 
       if ( c->patchReadyQueueNext == c->patchReadyQueueLen ) {
         c->finishTimers();
-        if (c->atomsChanged && (!simParams->GBISOn || c->gbisPhase == 1) && !c->reSortDone) {
+        if ( (c->savePairlists || !(c->usePairlists)) && (!simParams->GBISOn || c->gbisPhase == 1) && !c->reSortDone) {
           c->reSortTileLists();
           c->reSortDone = true;
           if (simParams->GBISOn && c->gbisPhase == 1) {
@@ -1484,7 +1486,7 @@ void CudaComputeNonbonded::forceDoneCheck(void *arg, double walltime) {
       c->forceDoneEventRecord = false;
       c->checkCount = 0;
       c->finishTimers();
-      if (c->atomsChanged && (!simParams->GBISOn || c->gbisPhase == 1) && !c->reSortDone) {
+      if ( (c->savePairlists || !(c->usePairlists)) && (!simParams->GBISOn || c->gbisPhase == 1) && !c->reSortDone) {
         c->reSortTileLists();
         c->reSortDone = true;
         if (simParams->GBISOn && c->gbisPhase == 1) {
