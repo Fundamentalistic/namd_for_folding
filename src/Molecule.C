@@ -9451,7 +9451,7 @@ void Molecule::build_atom_status(void) {
     }
     // Compare the number of massless particles against the number of lonepair
     // entries in the PSF -- these must match.
-    if (numLonepairs != numLphosts) {
+    if (is_lonepairs_psf && numLonepairs != numLphosts) {
       NAMD_die("must have same number of LP hosts as lone pairs");
     }
   } else if (numZeroMassAtoms) {
@@ -10545,6 +10545,7 @@ void Molecule::read_parm(Ambertoppar *amber_data)
     atoms[i].status = UnknownAtom; // the default
     if ( simParams->ignoreMass ) {
     } else if (atoms[i].mass <= 0.05) {
+      ++numZeroMassAtoms;
       atoms[i].status |= LonepairAtom;
     } else if (atoms[i].mass < 1.0) {
       atoms[i].status |= DrudeAtom;
