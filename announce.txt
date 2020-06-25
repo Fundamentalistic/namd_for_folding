@@ -1,10 +1,10 @@
 +--------------------------------------------------------------------+
 |                                                                    |
-|                  NAMD 2.14b1 Release Announcement                  |
+|                  NAMD 2.14b2 Release Announcement                  |
 |                                                                    |
 +--------------------------------------------------------------------+
 
-                                                           May 5, 2020
+                                                         June 25, 2020
 
 The Theoretical and Computational Biophysics Group at the University of
 Illinois is proud to announce the public release of a new version of
@@ -14,7 +14,7 @@ distributed free of charge and includes source code.  NAMD development
 is supported by the NIH National Institute of General Medical Sciences
 through grant number NIH P41-GM104601.
 
-NAMD 2.14b1 has many advantages over NAMD 2.13, including:
+NAMD 2.14b2 has many advantages over NAMD 2.13, including:
 
 - Hybrid single-dual topology alchemical free energy calculation
 
@@ -40,7 +40,7 @@ NAMD 2.14b1 has many advantages over NAMD 2.13, including:
 
   - Clean exit with non-zero status for many failures
 
-- Support for CUDA versions 8.0-10.x on Kepler or newer GPUs
+- Support for CUDA versions 8.0-11.0 on Kepler or newer GPUs
 
 
 Details at http://www.ks.uiuc.edu/Research/namd/2.14/features.html
