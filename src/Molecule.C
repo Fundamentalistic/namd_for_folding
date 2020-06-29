@@ -1573,8 +1573,27 @@ void Molecule::read_bonds(FILE *fd, Parameters *params)
     numZeroFrcBonds += (k == 0.);
     numLPBonds += is_lp_bond;
     numDrudeBonds += is_drude_bond;
-    if (k == 0. || is_lp_bond || is_drude_bond) --numBonds;  // fake bond
-    else ++num_read;  // real bond
+    /* haochuan: bonds involving lone pairs are still explicitly
+     * defined in the parameter files of TIP4 water model (2020-06-29),
+     * so we need to revert to the old behavior for including them in
+     * numBonds.
+     */
+    switch (simParams->watmodel) {
+      case WAT_TIP4: {
+        // Drude force field does not use TIP4 water
+        // so we can ignore is_drude_bond here
+        if (k == 0. && !is_lp_bond) --numBonds;  // fake bond
+        else ++num_read;  // real bond
+        break;
+      }
+      case WAT_SWM4:
+        // intentionally fall through
+      default: {
+        // should be this the default behavior?
+        if (k == 0. || is_lp_bond || is_drude_bond) --numBonds;  // fake bond
+        else ++num_read;  // real bond
+      }
+    }
   }
 
   /*  Tell user about our subterfuge  */
