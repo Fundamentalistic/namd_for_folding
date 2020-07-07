@@ -1,7 +1,7 @@
 # suppliment and override build definitions for CUDA 11
 
 # set directory default for TCB file system, override by user config
-CUDADIR=/usr/local/encap/cuda-11.0ea
+CUDADIR=/usr/local/encap/cuda-11.0
 
 # CUDA 11 no longer supports compute capability 3.0
 # CUDA 11 has deprecated compute capability 3.x and 5.x
