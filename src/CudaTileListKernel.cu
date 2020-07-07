@@ -1,9 +1,15 @@
 // #include <map>
 // #include <algorithm>
 #include <cuda.h>
+#if __CUDACC_VER_MAJOR__ >= 11
 #include <cub/device/device_radix_sort.cuh>
 #include <cub/device/device_scan.cuh>
 #include <cub/cub.cuh>
+#else
+#include <namd_cub/device/device_radix_sort.cuh>
+#include <namd_cub/device/device_scan.cuh>
+#include <namd_cub/cub.cuh>
+#endif
 #include "CudaUtils.h"
 #include "CudaTileListKernel.h"
 #include "DeviceCUDA.h"

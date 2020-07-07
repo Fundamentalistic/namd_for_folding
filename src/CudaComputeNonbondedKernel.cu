@@ -1,5 +1,9 @@
 #include <cuda.h>
+#if __CUDACC_VER_MAJOR__ >= 11
 #include <cub/cub.cuh>
+#else
+#include <namd_cub/cub.cuh>
+#endif
 #include "CudaComputeNonbondedKernel.h"
 #include "CudaTileListKernel.h"
 #include "DeviceCUDA.h"
