@@ -1705,10 +1705,10 @@ cvm::real colvar::update_forces_energy()
         cvm::log("Updating extended-Lagrangian degree of freedom.\n");
       }
 
-      if (prev_timestep > -1) {
+      if (prev_timestep > -1L) {
         // Keep track of slow timestep to integrate MTS colvars
         // the colvar checks the interval after waking up twice
-        int n_timesteps = cvm::step_relative() - prev_timestep;
+        cvm::step_number n_timesteps = cvm::step_relative() - prev_timestep;
         if (n_timesteps != 0 && n_timesteps != time_step_factor) {
           cvm::error("Error: extended-Lagrangian " + description + " has timeStepFactor " +
             cvm::to_str(time_step_factor) + ", but was activated after " + cvm::to_str(n_timesteps) +
@@ -2123,7 +2123,7 @@ void colvar::wrap(colvarvalue &x_unwrapped) const
 
 std::istream & colvar::read_state(std::istream &is)
 {
-  size_t const start_pos = is.tellg();
+  std::streampos const start_pos = is.tellg();
 
   std::string conf;
   if ( !(is >> colvarparse::read_block("colvar", &conf)) ) {
@@ -2204,7 +2204,7 @@ std::istream & colvar::read_state(std::istream &is)
 
 std::istream & colvar::read_traj(std::istream &is)
 {
-  size_t const start_pos = is.tellg();
+  std::streampos const start_pos = is.tellg();
 
   if (is_enabled(f_cv_output_value)) {
 

@@ -320,6 +320,17 @@ int colvarbias::update()
 }
 
 
+bool colvarbias::can_accumulate_data()
+{
+  colvarproxy *proxy = cvm::main()->proxy;
+  if (((cvm::step_relative() > 0) && !proxy->simulation_continuing()) ||
+      is_enabled(f_cvb_step_zero_data)) {
+    return true;
+  }
+  return false;
+}
+
+
 int colvarbias::calc_energy(std::vector<colvarvalue> const *)
 {
   bias_energy = 0.0;
@@ -469,7 +480,7 @@ std::ostream & colvarbias::write_state(std::ostream &os)
 
 std::istream & colvarbias::read_state(std::istream &is)
 {
-  size_t const start_pos = is.tellg();
+  std::streampos const start_pos = is.tellg();
 
   std::string key, brace, conf;
   if ( !(is >> key)   || !(key == state_keyword || key == bias_type) ||
@@ -589,7 +600,7 @@ int colvarbias::read_state_string(char const *buffer)
 
 std::istream & colvarbias::read_state_data_key(std::istream &is, char const *key)
 {
-  size_t const start_pos = is.tellg();
+  std::streampos const start_pos = is.tellg();
   std::string key_in;
   if ( !(is >> key_in) ||
        !(to_lower_cppstr(key_in) == to_lower_cppstr(std::string(key))) ) {

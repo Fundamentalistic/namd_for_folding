@@ -211,7 +211,7 @@ int colvarbias_abf::init(std::string const &conf)
       // Projected ABF
       get_keyval(conf, "pABFintegrateFreq", pabf_freq, 0);
       // Parameters for integrating initial (and final) gradient data
-      get_keyval(conf, "integrateInitMaxIterations", integrate_initial_iterations, 1e4);
+      get_keyval(conf, "integrateInitMaxIterations", integrate_initial_iterations, 10000);
       get_keyval(conf, "integrateInitTol", integrate_initial_tol, 1e-6);
       // for updating the integrated PMF on the fly
       get_keyval(conf, "integrateMaxIterations", integrate_iterations, 100);
@@ -492,10 +492,10 @@ int colvarbias_abf::update()
     eabf_UI.update(cvm::step_absolute(), x, y);
   }
 
-  /// Add the bias energy for 1D ABF
-  bias_energy = calc_energy(NULL);
+  /// Compute the bias energy
+  int error_code = calc_energy(NULL);
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
@@ -838,6 +838,8 @@ int colvarbias_abf::calc_energy(std::vector<colvarvalue> const *values)
   bias_energy = 0.0; // default value, overridden if a value can be calculated
 
   if (num_variables() > 1 || values != NULL) {
+    // Use simple estimate: neglect effect of fullSamples,
+    // return value at center of bin
     if (pmf != NULL) {
       std::vector<int> const curr_bin = values ?
         pmf->get_colvars_index(*values) :

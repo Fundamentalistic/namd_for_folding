@@ -566,9 +566,8 @@ int colvarbias_meta::update_grid_params()
 int colvarbias_meta::update_bias()
 {
   // add a new hill if the required time interval has passed
-  if ((cvm::step_absolute() % new_hill_freq) == 0 &&
-      ((cvm::step_relative() > 0) || is_enabled(f_cvb_step_zero_data)) &&
-      is_enabled(f_cvb_history_dependent)) {
+  if (((cvm::step_absolute() % new_hill_freq) == 0) &&
+      can_accumulate_data() && is_enabled(f_cvb_history_dependent)) {
 
     if (cvm::debug()) {
       cvm::log("Metadynamics bias \""+this->name+"\""+
@@ -1243,7 +1242,7 @@ void colvarbias_meta::read_replica_files()
 
           // test whether this is the end of the file
           is.seekg(0, std::ios::end);
-          if (is.tellg() > (replicas[ir])->replica_hills_file_pos+1) {
+          if (is.tellg() > (replicas[ir])->replica_hills_file_pos + ((std::streampos) 1)) {
             (replicas[ir])->update_status++;
           } else {
             (replicas[ir])->update_status = 0;
@@ -1327,7 +1326,7 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
       hills_energy_gradients        = new colvar_grid_gradient(colvars);
     }
 
-    size_t const hills_energy_pos = is.tellg();
+    std::streampos const hills_energy_pos = is.tellg();
     std::string key;
     if (!(is >> key)) {
       if (hills_energy_backup != NULL) {
@@ -1366,7 +1365,7 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
       }
     }
 
-    size_t const hills_energy_gradients_pos = is.tellg();
+    std::streampos const hills_energy_gradients_pos = is.tellg();
     if (!(is >> key)) {
       if (hills_energy_backup != NULL)  {
         delete hills_energy;
@@ -1514,7 +1513,7 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
 {
   if (!is) return is; // do nothing if failbit is set
 
-  size_t const start_pos = is.tellg();
+  std::streampos const start_pos = is.tellg();
   size_t i = 0;
 
   std::string data;

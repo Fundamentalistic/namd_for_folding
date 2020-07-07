@@ -4879,7 +4879,7 @@ In general, it is a good idea to \emph{define a repulsive potential to avoid hil
 \-harmonicWalls \{\\
 \-\-~~name wall\_r\\
 \-\-~~colvars r\\
-\-\-~~upperWall 13.0\\
+\-\-~~upperWalls 13.0\\
 \-\-~~upperWallConstant 2.0\\
 \-\}\\
 }
@@ -5701,8 +5701,8 @@ The \texttt{harmonicWalls} bias implements the following options:
 \-harmonicWalls \{\\
 \-\-~~name  mywalls\\
 \-\-~~colvars    dist\\
-\-\-~~lowerWall  22.0 \\
-\-\-~~upperWall  38.0 \\
+\-\-~~lowerWalls  22.0 \\
+\-\-~~upperWalls  38.0 \\
 \-\-~~lowerWallConstant  2.0 \\
 \-\-~~upperWallConstant 10.0 \\
 \-\}\\
@@ -5713,10 +5713,10 @@ The \texttt{harmonicWalls} bias implements the following options:
 \\
 \-harmonicWalls \{\\
 \-\-~~name  mywalls\\
-\-\-~~colvars      phi    psi\\
-\-\-~~lowerWall -180.0    0.0\\
-\-\-~~upperWall    0.0  180.0\\
-\-\-~~forceConstant  5.0 \\
+\-\-~~colvars       phi    psi\\
+\-\-~~lowerWalls -180.0    0.0\\
+\-\-~~upperWalls    0.0  180.0\\
+\-\-~~forceConstant 5.0 \\
 \-\}\\
 }
 
@@ -6160,7 +6160,7 @@ please be aware that \emph{several of these tutorials are not actively maintaine
   The parameter \refkey{hillWidth}{metadynamics|hillWidth}, expressing the Gaussian width $2\sigma$ in relative units (number of grid points), does not have a default value any more.
   A new alternative parameter \refkey{gaussianSigmas}{metadynamics|gaussianSigmas} allows setting the $\sigma$ parameters explicitly for each variable if needed.\\
   Furthermore, to facilitate the use of other analysis tools such as for example \texttt{sum\_hills}:\\
-\cvurl{https://www.plumed.org/doc-v2.6/user-doc/html/sum_hills.html}\\
+\cvurl{https://www.plumed.org/doc-v2.6/user-doc/html/sum\_hills.html}\\
   the format of the file written by \refkey{writeHillsTrajectory}{metadynamics|writeHillsTrajectory} has also been changed to use $\sigma$ instead of $2\sigma$.
   This change does not affect how the biasing potential is written in the state file, or the simulated trajectory.
 

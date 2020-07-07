@@ -243,11 +243,13 @@ int colvarproxy_namd::setup()
     atom_groups_new_colvar_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
+#if NAMD_VERSION_NUMBER >= 34471681
   log("updating grid object data ("+cvm::to_str(volmaps_ids.size())+
       " grid objects in total).\n");
   for (int imap = 0; imap < modifyGridObjForces().size(); imap++) {
     volmaps_new_colvar_forces[imap] = 0.0;
   }
+#endif
 
   return COLVARS_OK;
 }
@@ -260,7 +262,9 @@ int colvarproxy_namd::reset()
   // Unrequest all atoms and group from NAMD
   modifyRequestedAtoms().clear();
   modifyRequestedGroups().clear();
+#if NAMD_VERSION_NUMBER >= 34471681
   modifyRequestedGridObjects().clear();
+#endif
 
   atoms_map.clear();
 
@@ -288,11 +292,15 @@ void colvarproxy_namd::calculate()
     // Use the time step number inherited from GlobalMaster
     if ( step - previous_NAMD_step == 1 ) {
       colvars->it++;
+      b_simulation_continuing = false;
+    } else {
+      // Cases covered by this condition:
+      // - run 0
+      // - beginning of a new run statement
+      // The internal counter is not incremented, and the objects are made
+      // aware of this via the following flag
+      b_simulation_continuing = true;
     }
-    // Other cases could mean:
-    // - run 0
-    // - beginning of a new run statement
-    // then the internal counter should not be incremented
   }
 
   previous_NAMD_step = step;
@@ -344,9 +352,11 @@ void colvarproxy_namd::calculate()
     atom_groups_new_colvar_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
+#if NAMD_VERSION_NUMBER >= 34471681
   for (int imap = 0; imap < volmaps_ids.size(); imap++) {
     volmaps_new_colvar_forces[imap] = 0.0;
   }
+#endif
 
   // create the atom map if needed
   size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
@@ -445,6 +455,7 @@ void colvarproxy_namd::calculate()
     }
   }
 
+#if NAMD_VERSION_NUMBER >= 34471681
   {
     if (cvm::debug()) {
       log("Updating grid objects.\n");
@@ -462,6 +473,7 @@ void colvarproxy_namd::calculate()
       }
     }
   }
+#endif
 
   if (cvm::debug()) {
     cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
@@ -480,9 +492,11 @@ void colvarproxy_namd::calculate()
     cvm::log("atom_groups_total_forces = "+cvm::to_str(atom_groups_total_forces)+"\n");
     cvm::log(cvm::line_marker);
 
+#if NAMD_VERSION_NUMBER >= 34471681
     cvm::log("volmaps_ids = "+cvm::to_str(volmaps_ids)+"\n");
     cvm::log("volmaps_values = "+cvm::to_str(volmaps_values)+"\n");
     cvm::log(cvm::line_marker);
+#endif
   }
 
   // call the collective variable module
@@ -496,8 +510,10 @@ void colvarproxy_namd::calculate()
     cvm::log(cvm::line_marker);
     cvm::log("atom_groups_new_colvar_forces = "+cvm::to_str(atom_groups_new_colvar_forces)+"\n");
     cvm::log(cvm::line_marker);
+#if NAMD_VERSION_NUMBER >= 34471681
     cvm::log("volmaps_new_colvar_forces = "+cvm::to_str(volmaps_new_colvar_forces)+"\n");
     cvm::log(cvm::line_marker);
+#endif
   }
 
   // communicate all forces to the MD integrator
@@ -516,6 +532,7 @@ void colvarproxy_namd::calculate()
     }
   }
 
+#if NAMD_VERSION_NUMBER >= 34471681
   if (volmaps_new_colvar_forces.size() > 0) {
     modifyGridObjForces().resize(requestedGridObjs().size());
     modifyGridObjForces().setall(0.0);
@@ -530,6 +547,7 @@ void colvarproxy_namd::calculate()
       }
     }
   }
+#endif
 
   // send MISC energy
   reduction->submit();
@@ -1217,6 +1235,8 @@ int colvarproxy_namd::set_unit_system(std::string const &units_in, bool /*check_
 }
 
 
+#if NAMD_VERSION_NUMBER >= 34471681
+
 int colvarproxy_namd::init_volmap(int volmap_id)
 {
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
@@ -1271,6 +1291,8 @@ void colvarproxy_namd::clear_volmap(int index)
 {
   colvarproxy::clear_volmap(index);
 }
+
+#endif
 
 
 #if CMK_SMP && USE_CKLOOP // SMP only
