@@ -1012,7 +1012,7 @@ void Molecule::read_psf_file(char *fname, Parameters *params)
   sscanf(buffer, "%d", &numBonds);
 
   if (numBonds)
-    read_bonds(psf_file, params);
+    read_bonds(psf_file);
 
   /*  Read until we find the next non-blank line      */
   ret_code = NAMD_read_line(psf_file, buffer);
@@ -1205,6 +1205,27 @@ void Molecule::read_psf_file(char *fname, Parameters *params)
     // We found lone pair hosts.
     // Read the number and then read the lone pair hosts.
     sscanf(buffer, "%d", &numLphosts);
+  }
+
+  if (numLphosts == 0) {
+    // We either had no NUMLP section or we did and zero were listed.
+    // Nevertheless, we have no lone pair hosts
+    // so reset the simparams flag before simulation
+    simParams->lonepairs = FALSE;
+    is_lonepairs_psf = 0;
+  }
+  else if (simParams->lonepairs == FALSE /* but numLphosts > 0 */) {
+    // Config file "lonepairs" option is (now) enabled by default.
+    // Bad things will happen when lone pair hosts exist but "lonepairs"
+    // in simparams is disabled. In this event, terminate with an error.
+    NAMD_die("FOUND LONE PAIR HOSTS IN PSF WITH \"LONEPAIRS\" DISABLED IN CONFIG FILE");
+  }
+
+  // Process previously read bonds now that we know if lonepairs for TIP4 are explicit
+  if (numBonds) process_bonds(params);
+
+  if (is_found_numlp) {
+    // Must follow process_bonds() since lone pairs are placed at end of bonds array
     if (numLphosts > 0) read_lphosts(psf_file);
 
     // Keep reading for next keyword.
@@ -1227,20 +1248,6 @@ void Molecule::read_psf_file(char *fname, Parameters *params)
         is_found = is_found_ncrterm;
       }
     }
-  }
-
-  if (numLphosts == 0) {
-    // We either had no NUMLP section or we did and zero were listed.
-    // Nevertheless, we have no lone pair hosts
-    // so reset the simparams flag before simulation
-    simParams->lonepairs = FALSE;
-    is_lonepairs_psf = 0;
-  }
-  else if (simParams->lonepairs == FALSE /* but numLphosts > 0 */) {
-    // Config file "lonepairs" option is (now) enabled by default.
-    // Bad things will happen when lone pair hosts exist but "lonepairs"
-    // in simparams is disabled. In this event, terminate with an error.
-    NAMD_die("FOUND LONE PAIR HOSTS IN PSF WITH \"LONEPAIRS\" DISABLED IN CONFIG FILE");
   }
 
   if (is_found_numaniso && is_drude_psf) {
@@ -1511,16 +1518,12 @@ void Molecule::read_atoms(FILE *fd, Parameters *params)
 /*                  */
 /************************************************************************/
 
-void Molecule::read_bonds(FILE *fd, Parameters *params)
+void Molecule::read_bonds(FILE *fd)
 
 {
   int atom_nums[2];  // Atom indexes for the bonded atoms
   register int j;      // Loop counter
   int num_read=0;    // Number of bonds read so far
-  int origNumBonds = numBonds;   // number of bonds in file header
-  int numZeroFrcBonds = 0;
-  int numLPBonds = 0;
-  int numDrudeBonds = 0;
 
   /*  Allocate the array to hold the bonds      */
   bonds=new Bond[numBonds];
@@ -1557,6 +1560,30 @@ void Molecule::read_bonds(FILE *fd, Parameters *params)
     b->atom1=atom_nums[0];
     b->atom2=atom_nums[1];
 
+    ++num_read;
+  }
+
+}
+/*      END OF FUNCTION read_bonds      */
+
+/************************************************************************/
+void Molecule::process_bonds(Parameters *params) {
+
+  int atom_nums[2];  // Atom indexes for the bonded atoms
+  int origNumBonds = numBonds;   // number of bonds in file header
+  int num_read=0;    // Number of bonds read so far
+  int numZeroFrcBonds = 0;
+  int numLPBonds = 0;
+  int numDrudeBonds = 0;
+
+  for (int old_read=0; old_read < origNumBonds; ++old_read)
+  {
+    /*  Assign the atom indexes to the new array element  */
+    Bond *b = &(bonds[num_read]);
+    *b = bonds[old_read];
+    atom_nums[0] = b->atom1;
+    atom_nums[1] = b->atom2;
+
     /*  Query the parameter object for the constants for    */
     /*  this bond            */
     params->assign_bond_index(
@@ -1582,8 +1609,14 @@ void Molecule::read_bonds(FILE *fd, Parameters *params)
       case WAT_TIP4: {
         // Drude force field does not use TIP4 water
         // so we can ignore is_drude_bond here
-        if (k == 0. && !is_lp_bond) --numBonds;  // fake bond
-        else ++num_read;  // real bond
+        if ( is_lonepairs_psf ) { // new format, has NUMLP section in psf, numLphosts > 0
+          if (k == 0. || is_lp_bond) --numBonds;  // fake bond
+          else ++num_read;  // real bond
+        } else { // old format, no NUMLP section in psf
+          numLPBonds -= is_lp_bond;
+          if (k == 0. && !is_lp_bond) --numBonds;  // fake bond
+          else ++num_read;  // real bond
+        }
         break;
       }
       case WAT_SWM4:
@@ -1594,6 +1627,10 @@ void Molecule::read_bonds(FILE *fd, Parameters *params)
         else ++num_read;  // real bond
       }
     }
+  }
+
+  if ( num_read != numBonds ) {
+    NAMD_bug("num_read != numBonds in Molecule::process_bonds()");
   }
 
   /*  Tell user about our subterfuge  */
@@ -1616,9 +1653,8 @@ void Molecule::read_bonds(FILE *fd, Parameters *params)
     }
   }
 
-  return;
 }
-/*      END OF FUNCTION read_bonds      */
+/*      END OF FUNCTION process_bonds      */
 
 /************************************************************************/
 void Molecule::read_alch_unpert_bonds(FILE *fd) {

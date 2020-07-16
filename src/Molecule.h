@@ -371,8 +371,10 @@ private:
   
   void read_atoms(FILE *, Parameters *);
         //  Read in atom info from .psf
-  void read_bonds(FILE *, Parameters *);
+  void read_bonds(FILE *);
         //  Read in bond info from .psf
+  void process_bonds(Parameters *);
+        //  Remove fake bonds after read_lphosts() to deal with TIP4 water
   void read_angles(FILE *, Parameters *);
         //  Read in angle info from .psf
   void read_dihedrals(FILE *, Parameters *);
