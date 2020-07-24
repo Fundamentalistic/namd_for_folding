@@ -2731,7 +2731,7 @@ Both the map file and the atom selection file are then loaded via the \texttt{mG
   \-mGridForcePotFile Cavity cavity.dx~~~\# OpenDX map file\\
   \-mGridForceFile Cavity water-sel.pdb~~\# PDB file used for atom selection\\
   \-mGridForceCol Cavity O~~~~~~~~~~~~~~~\# Use the occupancy column of the PDB file\\
-  \-mGridForceChargeCol Cavity O~~~~~~~~~\# Use occ. again (default: electrostatic charge)\\
+  \-mGridForceChargeCol Cavity B~~~~~~~~~\# Use beta as ``charge'' (default: electric charge)\\
   \-mGridForceScale Cavity 0.0 0.0 0.0~~~\# Do not use GridForces for this map\\
 }
 
@@ -2771,14 +2771,17 @@ A series of map files, each representing a different shape, is loaded into NAMD:
 {\noindent\ttfamily
   \-mGridForce yes\\
   \-for \{ set k 1 \} \{ \$k <= \$K \} \{ incr k \} \{\\
-  \-~~mGridForcePotFile Shape\_\$k map\_\$k.dx~~\# Density map of the k-th state\\
-  \-~~\ldots\\
+  \-~~mGridForcePotFile Shape\_\$k map\_\$k.dx~~~\# Density map of the k-th state\\
+  \-~~mGridForceFile Shape\_\$k atoms.pdb~~~\# PDB file used for atom selection\\
+  \-~~mGridForceCol Shape\_\$k O~~~\# Use the occupancy column of the PDB file atoms.pdb\\
+  \-~~mGridForceChargeCol Shape\_\$k B~~~\# Use beta as ``charge'' (default: electric charge)\\
+  \-~~mGridForceScale Shape\_\$k 0.0 0.0 0.0~~\# Do not use GridForces for this map\\
   \-\}\\
 }
-and these are then used to define a multiple-map collective variable:\\
+The GridForces maps thus loaded are then used to define the Multi-Map collective variable, with coefficients $\xi_k = k$ \cite{Fiorin2020}:\\
 {\noindent\ttfamily
   \-\# Collect the definition of all components into one string\\
-  \-set components ""\\
+  \-set components "\\
   \-for \{ set k 1 \} \{ \$k <= \$K \} \{ incr k \} \{\\
   \-~~set components "\$\{components\}\\
   \-~~mapTotal \{\\
