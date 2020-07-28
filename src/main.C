@@ -158,7 +158,8 @@ public:
          << iINFO << "for updates, documentation, and support information.\n"
 #endif
 << iINFO << "\n"
-<< iINFO << "Please cite Phillips et al., J. Comp. Chem. 26:1781-1802 (2005)\n"
+<< iINFO << "Please cite Phillips et al., J. Chem. Phys. 153:044130 (2020) "
+            "doi:10.1063/5.0014475\n"
 << iINFO << "in all publications reporting results obtained with NAMD.\n"
 << iINFO << "\n"
          << endi;
