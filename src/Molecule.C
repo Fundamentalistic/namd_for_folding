@@ -5728,9 +5728,12 @@ void Molecule::send_Molecule(MOStream *msg){
   msg->put(is_drude_psf);
   if (is_drude_psf) {
     msg->put(numAtoms*sizeof(DrudeConst), (char*)drudeConsts);
+    msg->put(numTholes);
+    msg->put(numTholes*sizeof(Thole), (char*)tholes);
     msg->put(numAnisos);
     msg->put(numAnisos*sizeof(Aniso), (char*)anisos);
   }
+  msg->put(numZeroMassAtoms);
   // DRUDE
 
   //LCPO
@@ -6228,11 +6231,16 @@ void Molecule::receive_Molecule(MIStream *msg){
         delete[] drudeConsts;
         drudeConsts = new DrudeConst[numAtoms];
         msg->get(numAtoms*sizeof(DrudeConst), (char*)drudeConsts);
+        msg->get(numTholes);
+        delete[] tholes;
+        tholes = new Thole[numTholes];
+        msg->get(numTholes*sizeof(Thole), (char*)tholes);
         msg->get(numAnisos);
         delete[] anisos;
         anisos = new Aniso[numAnisos];
         msg->get(numAnisos*sizeof(Aniso), (char*)anisos);
       }
+      msg->get(numZeroMassAtoms);
       // DRUDE
 
   //LCPO
