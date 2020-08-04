@@ -137,16 +137,36 @@ added bonus that any Tcl command may also be used.  This alone allows:
 
 Additional features include:
 \begin{itemize}
- \item The ``\icommand{callback}'' command takes a 2-parameter Tcl procedure which
-    is then called with a list of labels and a list of values during
-    every timestep, allowing analysis, formatting, whatever.
- \item The ``\icommand{run}'' command takes a number of steps to run (overriding the
-    now optional numsteps parameter, which defaults to 0) and can be
-    called repeatedly.  You can ``run 0'' just to get energies.
-    Normally the preceeding timestep is repeated to account for any modifications to the
-    energy function; this can be avoided with ``\icommand{run norepeat}''.
+ \item The ``\icommand{run}'' command takes a number of steps to run
+    (overriding the now optional numsteps parameter, which defaults to 0)
+    and can be called repeatedly.  You can ``run 0'' just to get energies.
+    Normally the preceeding timestep is repeated to account for any
+    modifications to the energy function; this can be avoided with
+    ``\icommand{run norepeat}'' followed by the next number of steps to take.
  \item The ``\icommand{minimize}'' command is similar to ``run'' and performs
     minimization for the specified number of force evaluations.
+ \item The ``\icommand{callback}'' command takes a 2-parameter Tcl procedure
+    which is then called with a list of labels and a list of values, including
+    but not limited to the current step, energies, temperature, pressure and
+    volume, after every ``run'' procedure, allowing analysis, formatting,
+    whatever.  The following example illustrates using callbacks while
+    clarifying use of the earlier commands.
+    A 100-step minimization is first performed, followed by running 1000
+    steps of dynamics, with a Tcl callback function invoked every 100 steps.
+    \begin{verbatim}
+    minimize 100
+    proc my_callback_func {labels values} {
+      print $labels
+      print $values
+    }
+    callback my_callback_func
+    run 0
+    for {set i 0} {$i < 1000} {incr i 100} {
+      run norepeat 100
+    }
+    \end{verbatim}
+    Note the use of ``run norepeat'' to avoid reevaluating each
+    first step when the coordinates have not changed.
  \item The ``\icommand{startup}'' command will trigger simulation startup
     as would the first ``run'' or ``minimize'' command, but without any force/energy evaluation.
  \item Configuration file parameter introspection is supported by
